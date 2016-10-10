@@ -4,6 +4,9 @@ http://vincent.bernat.im/en/blog/2014-tcp-time-wait-state-linux.html
 
 http://serverfault.com/questions/329845/how-to-forcibly-close-a-socket-in-time-wait
 
+http://benohead.com/tcp-about-fin_wait_2-time_wait-and-close_wait/
+
+
 Time-wait and prerecording:
 ---------------------------
 
