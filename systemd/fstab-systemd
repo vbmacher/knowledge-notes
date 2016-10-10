@@ -1,0 +1,5 @@
+Mount units may either be configured via unit files, or via /etc/fstab (see fstab(5) for details). Mounts listed in /etc/fstab will be converted into native units dynamically at boot and when the configuration of the system manager is reloaded. In general, configuring mount points through /etc/fstab is the preferred approach. See systemd-fstab-generator(8) for details about the conversion.
+
+https://www.freedesktop.org/software/systemd/man/systemd.mount.html
+
+
