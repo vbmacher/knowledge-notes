@@ -1,6 +1,6 @@
 http://www.cyberciti.biz/tips/linux-core-dumps.html
 
-Don't forget to update also {{kernel.core_pattern}} in file {{/etc/sysctl.conf}},
+Don't forget to update also `kernel.core_pattern` in file `/etc/sysctl.conf`,
 because instead core dumps will be sent to automatic bug reporting tool.
 
 
