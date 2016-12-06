@@ -1,3 +1,0 @@
-
-
-find /opt/callrec/ -type f -exec sha1sum {} >> SHA1SUMS \;
