@@ -1,0 +1,45 @@
+# Dell Inspirion 15, Radeon R7 M265
+
+When Chrome or other browser renders very SLOW:
+
+- list VGA devices:
+
+$ lspci | grep VGA
+00:02.0 VGA compatible controller: Intel Corporation HD Graphics 5500 (rev 09)
+08:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Opal XT [Radeon R7 M265] (rev ff)
+
+Then put to /etc/X11/xorg.conf.d/20-intel.conf:
+
+Section "Device"
+   Identifier				"Intel"
+   Driver				"intel"
+   BusID				"PCI:0:2:0"
+EndSection
+
+and to /etc/X11/xorg.conf.d/20-radeon.conf:
+
+Section "Device"
+   Identifier				"Radeon"
+   Driver				"radeon"
+   BusID				"PCI:8:0:0"
+EndSection
+
+Then, run following:
+
+$ xrandr --listproviders 
+
+Providers: number : 2
+Provider 0: id: 0x68 cap: 0xb, Source Output, Sink Output, Sink Offload crtcs: 4 outputs: 3 associated providers: 1 name:Intel
+Provider 1: id: 0x41 cap: 0xf, Source Output, Sink Output, Source Offload, Sink Offload crtcs: 2 outputs: 0 associated providers: 1 name:OLAND @ pci:0000:08:00.0
+
+
+$ xrandr --setprovideroffloadsink "OLAND @ pci:0000:08:00.0" Intel
+
+
+## How to get to Xorg logs:
+
+$ sudo journalctl -b _COMM=gdm-x-session
+
+
+
+
