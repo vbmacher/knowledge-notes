@@ -1,0 +1,36 @@
+# Fighting data skew in hash joins
+
+It is worth to repartition data before join - as effort to reduce skew. E.g. like this:
+
+```
+val partitions = 1000
+val rep = df.withColumn("random", rand()).repartition(partitions, 'random).drop("random")
+```
+
+It's because how JOIN works.
+
+Every HashJoin (default) has two phases - shuffle and map. In the shuffle phase ensures that hashes of join keys are in one partition from both datasets.
+If data in terms of join keys are not uniformly distributed, then executors with small partitions will be finished with key hashing sooner and we end up
+with the last executor hashing the last biggest partition.
+
+So if we reduce the skew in the very beginning as suggested, then the first phase of JOIN will be fast and we don't need to do any "sharding".
+
+We can however perform skew reduction & join in one step:
+
+```
+import org.apache.spark.sql.functions.rand
+import session.implicits._
+
+val shards = 1000
+val justTaid = hotelMatches
+  .select('domain, 'taid, 'id.as("productId"))
+  .agg(explode(lit(1 to shards)).as("shard"))
+
+hotelFeed
+  .withColumn("shard", (rand() * shards).cast(IntegerType))
+  .join(justTaid, List("productId", "domain", "shard"), "left_outer")
+  .filter('shard.isNotNull)
+  .drop("shard")
+```
+
+

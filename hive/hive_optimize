@@ -1,0 +1,23 @@
+https://hortonworks.com/blog/5-ways-make-hive-queries-run-faster/
+
+set hive.vectorized.execution.enabled = true;
+
+set hive.vectorized.execution.reduce.enabled = true;
+
+
+
+set hive.cbo.enable=true;
+
+set hive.compute.query.using.stats=true;
+
+set hive.stats.fetch.column.stats=true;
+
+set hive.stats.fetch.partition.stats=true;
+
+
+analyze table tweets compute statistics;
+
+analyze table tweets compute statistics for columns sender, topic;
+
+analyze table tweets compute statistics for columns;
+
