@@ -21,10 +21,9 @@ We can however perform skew reduction & join in one step:
 import org.apache.spark.sql.functions.rand
 import session.implicits._
 
-val shards = 1000
+val shards = 100
 val justTaid = hotelMatches
-  .select('domain, 'taid, 'id.as("productId"))
-  .agg(explode(lit(1 to shards)).as("shard"))
+  .select('domain, 'taid, 'id.as("productId"), explode(lit(1 to shards)).as("shard"))
 
 hotelFeed
   .withColumn("shard", (rand() * shards).cast(IntegerType))
