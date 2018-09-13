@@ -1,0 +1,18 @@
+Tracking dependencies conflicts:
+
+- project dependencies:
+
+  https://solidsoft.wordpress.com/2014/11/13/gradle-tricks-display-dependencies-for-all-subprojects-in-multi-project-build/
+
+  subprojects {
+    task allDeps(type: DependencyReportTask) {}
+  }
+
+
+
+- tasks (buildscript) dependencies:
+
+  https://solidsoft.wordpress.com/2016/06/07/gradle-tricks-display-buildscript-dependencies/
+
+
+      ./gradlew buildEnvironment
