@@ -1,0 +1,12 @@
+Difference is execution model.
+
+Within repartition (shuffle=True), data in all partitions are randomly sent over to all executors and the result is
+RDD with smaller/greater number of partitions.
+
+Within coalesce (shuffle=False), number of tasks are at most as given number of partitions. E.g. if numberOfPartitions=1,
+one partition (with the most data) is selected and this partition "pulls" the others in just one task.
+
+
+
+
+
