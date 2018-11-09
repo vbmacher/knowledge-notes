@@ -36,3 +36,45 @@ db.getCollection('funnel_aggregates').aggregate([
   {$group: { _id: {'domain': '$domain', 'category': '$category', 'brand': '$brand', 'product': '$product', 'date':'$date'}, 'ids': { $addToSet: '_id' } }},
   {$match: { ids: { $gt: 1 }}}
 ])
+
+# Find unique combinations of things which equal or unequal
+
+db.getCollection('cross_aggregates').aggregate([
+  {$match: {'date': {$gte: ISODate("2018-09-01")}}},
+  {$project: {
+      'd': {$cond: {
+               if: { $eq: [ "", "$domain" ] },
+               then: "",
+               else: "X"
+           }},
+      'cd': {$cond: {
+               if: { $eq: [ "", "$crossDomain" ] },
+               then: "",
+               else: {
+                   $cond: {
+                       if: { $eq: ["$domain", "$crossDomain"] },
+                       then: "X",
+                       else: "Y"
+                       }
+               }
+           }},
+      'b': {$cond: {
+               if: { $eq: [ "", "$brand" ] },
+               then: "",
+               else: "A"
+           }},
+      'cb': {$cond: {
+               if: { $eq: [ "", "$crossBrand" ] },
+               then: "",
+               else: {
+                   $cond: {
+                       if: { $eq: ["$brand", "$crossBrand"] },
+                       then: "A",
+                       else: "B"
+                       }
+               }
+           }}
+  }},
+  {'$group': { '_id': {'d': '$d', 'cd': '$cd', 'b': '$b', 'cb': '$cb'}}}
+], {'allowDiskUse': true}) 
+
