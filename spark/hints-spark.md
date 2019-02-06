@@ -94,6 +94,24 @@ http://jerryshao.me/2015/08/22/spark-dynamic-allocation-investigation/
 
 # java.lang.InternalError: Malformed class name
 
+Combination of:
+
+https://gist.github.com/tzachz/c976a1080b6379ef861c142c16f1364a
+
+and:
+
+https://stackoverflow.com/questions/42735617/how-to-write-an-encoder-for-a-collection-in-spark-2-1
+
+
+I want to aggregate `Map[K, Seq[V]]` in `groupBy`:
+
+```
+  dataset.groupBy('something).agg(mergeMaps('themap))
+
+```
+
+For this, I need to define UDAF `mergeMaps`. Example:
+
 
 ```
 case class NameCount(name: String, count: Long)
