@@ -92,15 +92,106 @@ https://www.slideshare.net/cloudera/top-5-mistakes-to-avoid-when-writing-apache-
 http://jerryshao.me/2015/08/22/spark-dynamic-allocation-investigation/
 
 
+# java.lang.InternalError: Malformed class name
 
 
+```
+case class NameCount(name: String, count: Long)
+
+case class X(value: Seq[NameCount])
 
 
+// Now - either (wanted):
+//
+//  case class Y(a: String, b: Map[Int, Seq[NameCount]])
+//
+// - or - (works :/ )
+
+case class Y(a: String, b: Map[Int, X])
 
 
+// ...
+
+    import spark.implicits._
+
+    val ss = Seq(
+      Y("a", Map(1 -> X(Seq(NameCount("a", 1))))),
+      Y("a", Map(1 -> X(Seq(NameCount("a", 1)))))
+    ).toDS()
 
 
+    implicit val enc = Encoders.product[NameCount]
 
+    val mergess = new MergeMapsStructUDAF[Int, Seq[NameCount]](IntegerType, {
+      case (fst, snd) =>
+        val fstMap = fst.map(nc => (nc.name, nc.count)).toMap
+        val sndMap = snd.map(nc => (nc.name, nc.count)).toMap
+
+        val rawResult = fstMap ++ sndMap.map { case (k, v) => k -> fstMap.get(k).map(v + _).getOrElse(v) }
+        rawResult.toSeq.map { case (name, count) => NameCount(name, count) }
+    })
+
+    ss.groupBy('a).agg(mergess('b)).show()   // java.lang.InternalError: Malformed class name ?!!!
+```
+
+After debugging - it seems it's exception when creating another exception, from calling
+`getCanonicalName`:
+
+```
+     case other => throw new IllegalArgumentException(
+          s"The value (${other.toString}) of the type (${other.getClass.getCanonicalName}) "
+            + s"cannot be converted to an array of ${elementType.catalogString}")
+
+```
+
+^ Which is the real one.
+
+Solution:
+
+Arrays in maps are wrapped in struct by spark itself!!! The UDAF looks like:
+
+```
+class MergeMapsStructUDAF[K, V: Encoder](keyType: DataType, merge: (V, V) => V) extends UserDefinedAggregateFunction {
+  private implicit val enc = implicitly[Encoder[V]]
+
+  private val rowEncoder = RowEncoder(enc.schema)
+  private val valueEncoder = enc.asInstanceOf[ExpressionEncoder[V]].resolveAndBind()
+
+  override def inputSchema: StructType = new StructType().add("map", dataType)
+
+  override def bufferSchema: StructType = inputSchema
+
+  override def dataType: DataType = MapType(keyType, enc.schema)
+
+  override def deterministic: Boolean = true
+
+  override def initialize(buffer: MutableAggregationBuffer): Unit = buffer(0) = Map.empty[K, V]
+
+  override def update(buffer: MutableAggregationBuffer, input: Row): Unit = {
+    val map1 = buffer.getAs[Map[K, GenericRowWithSchema]](0)        // Simple V doesn't work :(
+      .mapValues(r => valueEncoder.fromRow(rowEncoder.toRow(r)))    
+    val map2 = Option(input.getAs[Map[K, GenericRowWithSchema]](0))  // Simple V doesn't work :(
+      .getOrElse(Map.empty[K, GenericRowWithSchema])
+      .mapValues(r => valueEncoder.fromRow(rowEncoder.toRow(r)))
+
+    buffer.update(0, mergeMaps[K, V](map1, map2, merge))
+  }
+
+  override def merge(buffer1: MutableAggregationBuffer, buffer2: Row): Unit = update(buffer1, buffer2)
+
+  override def evaluate(buffer: Row): Any = buffer.getAs[Map[K, V]](0)  // This works...
+}
+object MergeMapsStructUDAF {
+
+  def mergeMaps[K, V](map1: Map[K, V], map2: Map[K, V], merge: (V, V) => V): Map[K, V] = {
+    map1 ++ map2.map { case (k,v) => k -> map1.get(k).map(merge(_, v)).getOrElse(v) }
+  }
+
+  def apply[K, V: Encoder](keyType: DataType, merge: (V, V) => V): MergeMapsStructUDAF[K, V] = {
+    new MergeMapsStructUDAF(keyType, merge)
+  }
+}
+```
 
 
 
