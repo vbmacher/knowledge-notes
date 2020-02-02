@@ -1,0 +1,36 @@
+import scala.collection.Searching._
+
+
+val brandMappingReduced = brandMapping
+      .filter('normalized =!= 'master)
+      .select('normalized, 'master)
+
+    val brandMappingKeys = brandMappingReduced
+      .select('normalized)
+      .sort()
+      .as[String]
+      .collect()  // assume keys can fit in memory
+      .toIndexedSeq
+
+    val brandMappingKeysShared = session.sparkContext.broadcast(brandMappingKeys)
+
+    val normalizedP2P = p2p
+      .withColumn("normalized", transformBrand(rawBrand))
+      .drop("brand")
+      .cache()
+
+    val reducedP2P = normalizedP2P.filter {
+      r => brandMappingKeysShared.value.search(r.getAs[String]("normalized")).isInstanceOf[Found]
+    }
+
+    val theRestOfP2P = normalizedP2P.filter {
+      r => !brandMappingKeysShared.value.search(r.getAs[String]("normalized")).isInstanceOf[Found]
+    }.withColumnRenamed("normalized", "brand")
+
+    reducedP2P
+      .join(brandMappingReduced, List("normalized"))
+      .withColumnRenamed("master", "brand")
+      .drop("normalized")
+      .unionByName(theRestOfP2P)
+
+

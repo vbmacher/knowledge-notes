@@ -1,0 +1,23 @@
+If haha.sh contains:
+
+    #!/bin/bash
+    echo "FROM = $1"
+    echo "TO   = $2"
+
+Then, executing:
+
+    python ranges.py 2017-01-01 2019-11-26 | xargs -L 1 ~/haha.sh
+
+
+We'll get:
+
+    FROM = 2017-01-01
+    TO   = 2017-01-31
+    FROM = 2017-02-01
+    TO   = 2017-02-28
+    FROM = 2017-03-01
+    TO   = 2017-03-31
+    ...
+    FROM = 2019-11-01
+    TO   = 2019-11-26
+
