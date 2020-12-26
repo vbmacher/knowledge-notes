@@ -1,0 +1,10 @@
+rsync -azP source destination
+
+
+a: archive - preserves symlinks,user,time
+z: compression
+P: allows resume interrupted sync + see progress
+
+
+NOTE: if only dir content to be transferred, put trailing slash / on the source
+
