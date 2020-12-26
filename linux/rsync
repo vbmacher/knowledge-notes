@@ -1,10 +1,10 @@
 rsync -azP source destination
-
+rsync -azP --delete source destination
 
 a: archive - preserves symlinks,user,time
 z: compression
 P: allows resume interrupted sync + see progress
-
+delete: deletes destination files if they were removed in source
 
 NOTE: if only dir content to be transferred, put trailing slash / on the source
 
