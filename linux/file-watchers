@@ -1,0 +1,42 @@
+Sometimes, IntelliJ IDEA suggests to increase inotify watches:
+
+https://confluence.jetbrains.com/display/IDEADEV/Inotify+Watches+Limit
+
+
+1. Add the following line to either /etc/sysctl.conf file or a new *.conf file (e.g. idea.conf) under /etc/sysctl.d/ directory:
+
+    fs.inotify.max_user_watches = 524288
+
+2. Then run this command to apply the change:
+
+    sudo sysctl -p --system
+
+    (or)
+
+    sudo systemctl restart systemd-sysctl.service
+
+
+However, setting good value might be tricky, because on 32-bit systems one watch consumes 540bytes, and on 64-bit system 1KB:
+
+    https://stackoverflow.com/questions/535768/what-is-a-reasonable-amount-of-inotify-watches-with-linux
+
+
+So, how to know if I'm really out of watches?
+
+    https://askubuntu.com/questions/154255/how-can-i-tell-if-i-am-out-of-inotify-watches
+
+    tail -f /var/log/dmesg     - if the output is "tail: cannot watch '/var/log/dmsg': No space left on device"
+
+
+If I also want to know the actual current number of inotify watches:
+
+     sudo lsof | grep -i inotify | wc -l
+
+
+Get currently max value of watches (https://unix.stackexchange.com/questions/13751/kernel-inotify-watch-limit-reached):
+
+     cat /proc/sys/fs/inotify/max_user_watches
+
+
+
+

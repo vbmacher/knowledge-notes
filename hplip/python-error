@@ -1,0 +1,18 @@
+$ hp-scan 
+
+Traceback (most recent call last):
+  File "/usr/bin/hp-scan", line 1314, in <module>
+    device.waitForScanActive()
+  File "/usr/share/hplip/scan/sane.py", line 403, in waitForScanActive
+    if self.scan_thread.isAlive() and \
+AttributeError: 'ScanThread' object has no attribute 'isAlive'
+
+
+Solution:
+
+sudo sed -i 's/isAlive()/is_alive()/g' /usr/share/hplip/*/{copier.py,fax.py,pmlfax.py,sane.py}
+
+
+https://bugs.launchpad.net/hplip/+bug/1889280
+
+
