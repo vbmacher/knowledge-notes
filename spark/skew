@@ -32,3 +32,42 @@ We can however perform skew reduction & join in one step:
       .filter('shard.isNotNull)  // mega important
       .drop("normalized", "shard")
 ```
+
+
+```
+implicit class DatasetOps[T](fst: Dataset[T]) {
+    val shards = 60
+    private lazy val fstSharded = fst.withColumn("shard", explode(typedLit[Seq[Int]](0 until shards)))
+
+//    def shardedJoinWith[U](snd: Dataset[U], condition: Column)
+//      (implicit spark: SparkSession): Dataset[(T, U)] = {
+//      import spark.implicits._
+//
+//      val sndSharded = snd.withColumn("shard", pmod((rand() * Int.MaxValue) cast LongType, lit(shards)) cast IntegerType)
+//      fstSharded
+//        .joinWith(sndSharded, condition && fstSharded("shard") == sndSharded("shard"), "left_outer")
+//        .filter(fstSharded("shard").isNotNull && sndSharded("shard").isNotNull)
+//        .drop(fstSharded("shard"))
+//        .drop(sndSharded("shard"))
+//        .as[(T, U)]
+//    }
+
+    def shardedJoin[U](snd: Dataset[U], condition: Column)(implicit spark: SparkSession): DataFrame = {
+      val sndSharded = snd.withColumn("shard2", pmod((rand() * Int.MaxValue) cast LongType, lit(shards)) cast IntegerType)
+      import spark.implicits._
+      fstSharded
+        .join(sndSharded, (fstSharded("shard") === sndSharded("shard2")) && condition, "left_outer")
+        .filter($"shard".isNotNull && $"shard2".isNotNull)
+        .drop("shard", "shard2")
+    }
+
+    def shardedAntiJoin[U](snd: Dataset[U], condition: Column)(implicit spark: SparkSession): DataFrame = {
+      val sndSharded = snd.withColumn("shard", pmod((rand() * Int.MaxValue) cast LongType, lit(shards)) cast IntegerType)
+      import spark.implicits._
+      fstSharded
+        .join(sndSharded, (fstSharded("shard") =!= sndSharded("shard")) || condition, "leftanti")
+        .filter(fstSharded("shard").isNotNull)
+        .drop("shard")
+    }
+  }
+```

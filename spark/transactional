@@ -1,0 +1,24 @@
+Spark transactionality
+
+https://databricks.com/blog/2017/05/31/transactional-writes-cloud-storage.html
+
+```
+mapreduce.fileoutputcommitter.algorithm.version = 1 or 2
+```
+
+v1: slow, transactional on task, job level but not driver level
+v2: fast, transactional on task level but not job, driver level
+
+Databricks has it's own DBIO commit protocol
+
+
+
+
+https://www.slideshare.net/databricks/spark-and-s3-with-ryan-blue
+
+S3MultipartOutputCommitter
+
+
+Use iceberg:
+https://iceberg.apache.org/reliability/
+
