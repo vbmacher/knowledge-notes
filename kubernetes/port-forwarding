@@ -1,0 +1,7 @@
+Pod has a namespace and name
+
+kubectl port-forward --namespace xxx yyy 8085:80
+                                         ^     ^
+					 |     +-- from pod's port
+					 +-- to host port
+

@@ -1,0 +1,2 @@
+kubectl logs --namespace xxx yyy
+
