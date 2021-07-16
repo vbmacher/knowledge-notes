@@ -1,0 +1,7 @@
+https://askubuntu.com/questions/1339726/set-graphics-driver-to-nouveau-for-specific-grub-menuentry
+
+
+GRUB, edit command:
+
+modprobe.blacklist=nvidia systemd.setenv=GPUMOD=nouveau rd.driver.blacklist=nvidia nouveau.modeset=1 nvidia.modeset=0
+
