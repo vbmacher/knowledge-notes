@@ -1,0 +1,86 @@
+
+1. Observe:
+
+watch "cat /proc/cpuinfo | grep 'MHz'"
+
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 800.099
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 800.054
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+cpu MHz         : 3700.000
+
+
+Not really clear
+
+2. Observe with certainity
+
+cpupower -c all frequency-info | egrep  "current CPU.+MHz|governor"
+
+
+  available cpufreq governors: performance powersave
+                  The governor "porwersave" may decide which speed to use
+  current CPU frequency: 800 MHz (asserted by call to kernel)
+  available cpufreq governors: performance powersave
+                  The governor "powersave" may decide which speed to use
+  current CPU frequency: 800 MHz (asserted by call to kernel)
+  ...
+
+3. Which CpuFreq driver you have 
+
+
+cpupower -c all frequency-info | grep driver
+
+  driver: intel_pstate
+  driver: intel_pstate
+  driver: intel_pstate
+  driver: intel_pstate
+  driver: intel_pstate
+  driver: intel_pstate
+  driver: intel_pstate
+  driver: intel_pstate
+  ...
+
+4. Solve it
+
+- Disable SpeedStep in BIOS
+- run:
+  
+  sudo cpupower frequency-set --governor performance
+
+- run:
+
+#!/usr/bin/env bash
+
+sudo rmmod intel_rapl_msr
+sudo rmmod processor_thermal_device
+sudo rmmod processor_thermal_rapl
+sudo rmmod intel_rapl_common
+sudo rmmod intel_powerclamp
+
+sudo modprobe intel_powerclamp
+sudo modprobe intel_rapl_common
+sudo modprobe processor_thermal_rapl
+sudo modprobe processor_thermal_device
+sudo modprobe intel_rapl_msr
+
+
+
+
+
+
+
