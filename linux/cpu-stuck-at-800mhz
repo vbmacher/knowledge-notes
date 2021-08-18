@@ -40,6 +40,42 @@ cpupower -c all frequency-info | egrep  "current CPU.+MHz|governor"
   current CPU frequency: 800 MHz (asserted by call to kernel)
   ...
 
+
+
+
+find / -name scaling_governor
+find / -name scaling_max_freq
+
+
+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
+powersave
+powersave
+powersave
+powersave
+powersave
+powersave
+powersave
+powersave
+...
+
+for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "performance" > $file; done
+
+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
+performance
+performance
+performance
+performance
+performance
+...
+
+
+
+
+
+
+
 3. Which CpuFreq driver you have 
 
 

@@ -1,0 +1,52 @@
+# Spatial join never finishes computing
+
+I found the following mailing list:
+
+https://www.mail-archive.com/search?l=dev%40sedona.apache.org&q=subject:%22Spatial+join+performances%22&o=newest&f=1
+
+Where they suggest:
+
+> A few tips to optimize your join:
+> 1. Mix DF and RDD together and use RDD API for the join part. See the
+> example here:
+> 
+> 2. When use point_rdd.spatialPartitioning(GridType.KDBTREE, 4), try to use
+> a large number of partitions (say 1000 or more)
+> 
+> If this approach doesn't work, consider broadcast join if needed. Broadcast
+> the polygon side:
+
+However, when looking at example code, our code, etc. I observed this:
+
+
+    poly.analyze
+    poly.spatialPartitioning(GridType.KDBTREE)   // according to suggestion, we should increase this
+
+    pts.analyze
+    pts.spatialPartitioning(poly.getPartitioner)
+
+    // ref: The index should be built on either one of two SpatialRDDs. In general, you should build it on the larger SpatialRDD.
+    val buildOnSpatialPartitionedRDD = true // Set to TRUE only if run join query
+    pts.buildIndex(IndexType.QUADTREE, buildOnSpatialPartitionedRDD)  // <--- HERE is the source of the problem
+
+
+What is QUADTREE index? QUADTREE is a tree where nodes have exactly 4 children except leaves. According to https://informix-spatial-technology.blogspot.com/2012/01/comparison-on-b-tree-r-tree-quad-tree.html#:~:text=A%20Quadtree%20is%20a%20tree,node%20has%20exactly%20four%20children.&text=The%20B%2Dtree%20is%20a,write%20large%20blocks%20of%20data. we have:
+
+> QUADTREE : Tuning is more complex, and setting the appropriate tuning parameter values can affect performance significantly.
+
+Hmm.. We have everything on our plate. When considering the suggestion to *increase* partitions and buildOnSpatialPartitionedRDD = true, we know that the QUADTREE index is build on partitions, thus potentially extending Spark partitions to enormous size.
+
+What we should do instead is use RTREE, which:
+
+> RTREE: Index creation and tuning are easier.
+
+and together with increasing partitions we should be good!!!
+
+
+
+
+
+
+
+
+
