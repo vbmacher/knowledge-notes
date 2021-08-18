@@ -42,9 +42,38 @@ What we should do instead is use RTREE, which:
 
 and together with increasing partitions we should be good!!!
 
+=========== nicer message ==============================================
 
 
+Regarding performance and Apache Sedona.
+I have observed the behavior of infinite computation on bigger datasets.
+My clusters (also larger ones :disappointed: ) run > 18 hours; then I killed them. But that's not end of my story, it would be lame to end it like this.
 
+I was digging into the issue, and I found several pieces which can be assembled in clever way to get to the solution.
+
+*Piece 1*: I found this mailing list:
+ https://www.mail-archive.com/search?l=dev%40sedona.apache.org&q=subject:%22Spatial+join+performances%22&o=newest&f=1
+ where they describe the same problem as we have. Among others they got interesting suggestion:
+
+>  When use `point_rdd.spatialPartitioning(GridType.KDBTREE, 4)`, try to use a large number of partitions (say 1000 or more)
+
+*Piece 2*: Also, I noticed that we're using `QUADTREE` index (also every example on internet including the mailing list uses that index...):
+
+```
+val buildOnSpatialPartitionedRDD = true // Set to TRUE only if run join query
+pts.buildIndex(IndexType.QUADTREE, buildOnSpatialPartitionedRDD) // QUADTREE : Tuning is more complex, and setting the appropriate tuning parameter values can affect performance significantly.
+```
+
+*Piece 3*: The index is built in every spark partition due to JOIN. Spatial JOINs work as follows:
+
+1. two datasets must use the same spatial partitioning, based on location.
+2. Partitions with same locations are zipped together
+3. Data in zipped partitions are matched against each other using index build in each partition separately
+QUADTREE index has however exponential complexity (each node has exactly 4 children except leaves). Nice explanation and visualization of various indexes (QUADTREE and RTREE) I found in: https://towardsdatascience.com/geospark-stands-out-for-processing-geospatial-data-at-scale-548077270ec0
+
+*Assembly*:
+Why the suggestion was to increase partitions? Because index, created on every Spark partition is huge, due to QUADTREE complexity and lot of data, so by increasing partitions we reduce index size. In general, RTREE is optimized for storage (consumes less space than QUADTREE), also by this comparison: https://informix-spatial-technology.blogspot.com/2012/01/comparison-on-b-tree-r-tree-quad-tree.html#:~:text=A%20Quadtree%20is%20a%20tree,node%20has%20exactly%20four%20children.&text=The%20B%2Dtree%20is%20a,write%20large%20blocks%20of%20data
+So I tried only change QUADTREE to RTREE (and I kept partitions as they were), and the job finished! But I think we should increase partitions anyway to achieve even better performance (I will at least try it).
 
 
 
