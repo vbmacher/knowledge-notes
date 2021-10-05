@@ -1,0 +1,12 @@
+
+https://stackoverflow.com/questions/13064613/how-to-prune-local-tracking-branches-that-do-not-exist-on-remote-anymore
+
+remove the local branches that are not on the remote:
+git remote prune origin
+
+remove local branches that were created from those remote branches:
+git branch -r | awk '{print $1}' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '{print $1}' | xargs git branch -d
+
+
+delete all local branches that are already merged into master:
+git branch --merged master | grep -v '^[ *]*master$' | xargs git branch -d
