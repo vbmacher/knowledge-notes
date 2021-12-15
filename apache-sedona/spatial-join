@@ -42,6 +42,14 @@ What we should do instead is use RTREE, which:
 
 and together with increasing partitions we should be good!!!
 
+Quadtree vs. Rtree:
+
+https://www.youtube.com/watch?v=5-_3Ec5ZeBQ
+
+
+Table III:
+https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.307.5629&rep=rep1&type=pdf
+
 =========== nicer message ==============================================
 
 

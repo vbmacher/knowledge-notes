@@ -1,0 +1,5 @@
+
+
+hadoop_conf.set("fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+
+https://stackoverflow.com/questions/65667996/how-to-configure-spark-glue-to-avoid-creation-of-empty-folder-after-glue-j?noredirect=1&lq=1
