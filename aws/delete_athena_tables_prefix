@@ -1,0 +1,11 @@
+aws glue get-tables \
+  --region us-east-1 \
+  --database-name MY_DATABASE \
+  --query 'TableList[].Name' \
+  --output text \
+  | grep -F MY_PREFIX \
+  | xargs -n 1 aws glue delete-table \
+    --region us-east-1 \
+    --database-name MY_DATABASE \
+    --name
+

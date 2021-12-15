@@ -1,0 +1,33 @@
+# SWAY notes
+2021-08-01
+
+
+grim - screenshot taker for wayland; only command-line version??
+slurp - select a region in wayland and print it to stdout. works well with grim
+
+kanshi - dynamic display profiles; equivalent for autoandr
+
+mako - lightweight wayland notification daemon
+
+rofi - window switcher, application launcher, dmenu replacement
+
+sway
+swaybg
+swayidle
+swaylock
+
+waybar
+
+wlroots
+xdg-desktop-portal-wlr
+   wlroots backend
+   
+   in sway cfg:
+     exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
+
+   in gdm desktop
+     sudo vim /usr/share/wayland-sessions/sway.desktop      
+     X-GDM-SessionRegisters=true
+    
+   if not showing up -> NVIDIA prorietary driver does not support wayland
+
