@@ -1,0 +1,17 @@
+Combining partitionBy.bucketBy:
+
+https://stackoverflow.com/questions/46994779/how-to-saveastable-to-s3
+
+df
+                .write()
+                .option("mode", "DROPMALFORMED")
+                .option("compression", "snappy")
+                .option("path","s3://....")
+                .mode("overwrite")
+                .format("parquet")
+                .bucketBy(32,"column").sortBy("column")
+                .saveAsTable("tableName");
+
+This will create a external table pointing to the S3 location .option("path","s3://....") is the catch here
+
+

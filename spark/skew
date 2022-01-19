@@ -1,5 +1,8 @@
 # Fighting data skew in hash joins
 
+https://itnext.io/handling-data-skew-in-apache-spark-9f56343e58e8
+
+
 It is worth to repartition data before join - as effort to reduce skew. E.g. like this:
 
 ```
@@ -26,10 +29,9 @@ We can however perform skew reduction & join in one step:
     p2p
       .withColumn("normalized", transformBrand(rawBrand))
       .drop("brand")
-      .withColumn("shard", pmod((rand() * Int.MaxValue) cast LongType, lit(shards)) cast IntegerType)
+      .withColumn("shard", monotonicall_increasing_id() % shards)
       .join(brandMappingSharded, List("normalized", "shard"), "left_outer")
       .withColumnRenamed("master", "brand")
-      .filter('shard.isNotNull)  // mega important
       .drop("normalized", "shard")
 ```
 
