@@ -1,0 +1,5 @@
+Linux command alternatives (e.g. to config Java version dynamically) is:
+
+jenv
+
+https://silvae86.github.io/2021/08/02/managing-java-versions-on-mac/
