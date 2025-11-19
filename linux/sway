@@ -31,3 +31,36 @@ xdg-desktop-portal-wlr
     
    if not showing up -> NVIDIA prorietary driver does not support wayland
 
+
+# 2025-02-17
+
+Brave/Chrome does not open File Open / Save dialogs in sway (wayland)
+
+https://discussion.fedoraproject.org/t/blink-based-browsers-dont-open-file-dialog-in-sway-fedora-38/90403/3
+
+had the same issue, I fixed it by adding gnome;sway to UseIn in /usr/share/xdg-desktop-portal/portals/gtk.portal
+without this config there is no dbus interface org.freedesktop.impl.portal.FileChooser
+not sure what should be the default interface for sway or how it was working previously
+log out log back in
+
+
+Open Brave Browser with native Wayland drawing (nicer fonts!!)
+
+cp /usr/share/applications/brave-browser.desktop ~/.local/share/applications/
+
+vim ~/.local/share/applications/brave-browser.desktop
+
+
+Exec=brave-browser --enable-features=UseOzonePlatform --ozone-platform=wayland %U
+
+
+
+## IntelliJ on wayland
+
+https://blog.jetbrains.com/platform/2024/07/wayland-support-preview-in-2024-2/
+
+to their VM options (Help | Edit Custom VM Options…). 
+
+-Dawt.toolkit.name=WLToolkit
+
+

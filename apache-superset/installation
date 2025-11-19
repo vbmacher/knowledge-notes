@@ -1,0 +1,38 @@
+Installation on Asahi Linux
+
+
+git clone https://github.com/apache/superset.git
+
+cd superset/
+
+echo "pyathena[pandas]\nPyAthenaJDBC" > docker/requirements-local.txt
+chmod -R a+rX docker/docker-entrypoint-initdb.d
+chmod +x docker/docker-bootstrap.sh
+
+
+diff --git a/docker-compose-image-tag.yml b/docker-compose-image-tag.yml
+index 15dc6d3e75..5341a00675 100644
+--- a/docker-compose-image-tag.yml
++++ b/docker-compose-image-tag.yml
+@@ -24,7 +24,7 @@
+ x-superset-image: &superset-image apachesuperset.docker.scarf.sh/apache/superset:${TAG:-latest-dev}
+ x-superset-volumes:
+   &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+-  - ./docker:/app/docker
++  - ./docker:/app/docker:z
+   - superset_home:/app/superset_home
+
+ services:
+@@ -46,7 +46,7 @@ services:
+     restart: unless-stopped
+     volumes:
+       - db_home:/var/lib/postgresql/data
+-      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
++      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:z
+
+   superset:
+     env_file:
+
+
+
+docker compose -f docker-compose-image-tag.yml up
